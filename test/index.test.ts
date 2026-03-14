@@ -639,4 +639,72 @@ describe('plugin hooks', () => {
       /\?to=ts cannot be used with bundle mode/,
     )
   })
+
+  it('load does not include HMR code without dev server', async () => {
+    const plugin = cookedPlugin()
+    const load = plugin.load as Function
+    const addWatchFile = vi.fn()
+
+    const id = fixture('basic.ts') + '?to=js&nobundle'
+    const result = await load.call({ addWatchFile }, id)
+
+    expect(result.code).not.toContain('import.meta.hot')
+  })
+
+  it('load includes HMR accept code after configureServer', async () => {
+    const plugin = cookedPlugin()
+    const configureServer = plugin.configureServer as Function
+    const load = plugin.load as Function
+    const addWatchFile = vi.fn()
+
+    // Simulate dev server
+    const mockServer = {
+      watcher: { on: vi.fn() },
+      moduleGraph: { idToModuleMap: new Map() },
+    }
+    configureServer(mockServer)
+
+    const id = fixture('with-types.ts') + '?to=js&nobundle'
+    const result = await load.call({ addWatchFile }, id)
+
+    expect(result.code).toContain('export default ')
+    expect(result.code).toContain('import.meta.hot')
+    expect(result.code).toContain('import.meta.hot.accept()')
+  })
+
+  it('configureServer invalidates cooked modules on file change', () => {
+    const plugin = cookedPlugin()
+    const configureServer = plugin.configureServer as Function
+
+    const invalidateModule = vi.fn()
+    const cookedModId = fixture('basic.ts') + '?to=js'
+    const otherModId = '/some/other.ts?to=js'
+
+    const mockMod = { id: cookedModId }
+    const otherMod = { id: otherModId }
+    const idToModuleMap = new Map([
+      [cookedModId, mockMod],
+      [otherModId, otherMod],
+    ])
+
+    let changeHandler: Function
+    const mockServer = {
+      watcher: {
+        on: vi.fn((event: string, handler: Function) => {
+          if (event === 'change') changeHandler = handler
+        }),
+      },
+      moduleGraph: { idToModuleMap, invalidateModule },
+    }
+
+    configureServer(mockServer)
+
+    // Trigger file change for the cooked source file
+    changeHandler!(fixture('basic.ts'))
+
+    // Should invalidate the matching cooked module
+    expect(invalidateModule).toHaveBeenCalledWith(mockMod)
+    // Should NOT invalidate unrelated modules
+    expect(invalidateModule).not.toHaveBeenCalledWith(otherMod)
+  })
 })
