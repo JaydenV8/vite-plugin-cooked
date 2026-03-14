@@ -34,10 +34,13 @@ async function transformWithEsbuild(
     format: 'esm',
     minify,
     ...(target ? { target } : {}),
-    ...(query.banner ? { banner: query.banner } : {}),
   })
 
-  return result.code
+  let output = result.code
+  if (query.banner) {
+    output = query.banner + '\n' + output
+  }
+  return output
 }
 
 async function transformWithOxc(

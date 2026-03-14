@@ -1,12 +1,13 @@
 import fs from 'node:fs'
+import type { CookedQuery } from './types.js'
 
 const cache = new Map<string, string>()
 
-export function getCacheKey(
+export async function getCacheKey(
   filepath: string,
-  query: CookedQuery_Like,
-): string {
-  const stat = fs.statSync(filepath)
+  query: CookedQuery,
+): Promise<string> {
+  const stat = await fs.promises.stat(filepath)
   const fingerprint = `${stat.mtimeMs}:${stat.size}`
   const queryStr = stableStringify(query)
   return `${filepath}:${queryStr}:${fingerprint}`
@@ -29,14 +30,13 @@ export function invalidateCache(filepath: string): void {
   }
 }
 
-type CookedQuery_Like = Record<string, unknown>
-
-function stableStringify(obj: CookedQuery_Like): string {
+function stableStringify(obj: CookedQuery): string {
+  const record = obj as unknown as Record<string, unknown>
   return JSON.stringify(
-    Object.keys(obj)
+    Object.keys(record)
       .sort()
       .reduce<Record<string, unknown>>((acc, key) => {
-        acc[key] = obj[key]
+        acc[key] = record[key]
         return acc
       }, {}),
   )

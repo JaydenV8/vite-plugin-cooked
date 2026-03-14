@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import type { Plugin, ResolvedConfig } from 'vite'
+import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite'
 import { parseCookedQuery } from './parse-query.js'
 import { compileCode } from './transform.js'
 import { bundleCode } from './bundle.js'
@@ -11,8 +11,11 @@ export { parseCookedQuery } from './parse-query.js'
 export { compileCode } from './transform.js'
 export { bundleCode } from './bundle.js'
 
+const HMR_ACCEPT = `\nif (import.meta.hot) { import.meta.hot.accept() }\n`
+
 export default function cookedPlugin(options?: CookedOptions): Plugin {
   let resolvedConfig: ResolvedConfig
+  let server: ViteDevServer | undefined
 
   return {
     name: 'vite-plugin-cooked',
@@ -22,9 +25,19 @@ export default function cookedPlugin(options?: CookedOptions): Plugin {
       resolvedConfig = config
     },
 
-    configureServer(server) {
+    configureServer(_server) {
+      server = _server
       server.watcher.on('change', (changedPath) => {
         invalidateCache(changedPath)
+
+        // Invalidate cooked modules that depend on the changed file
+        for (const [, mod] of server!.moduleGraph.idToModuleMap) {
+          if (!mod.id) continue
+          const parsed = parseCookedQuery(mod.id)
+          if (parsed && parsed.filepath === changedPath) {
+            server!.moduleGraph.invalidateModule(mod)
+          }
+        }
       })
     },
 
@@ -62,14 +75,12 @@ export default function cookedPlugin(options?: CookedOptions): Plugin {
 
       this.addWatchFile(filepath)
 
-      const cacheKey = getCacheKey(
-        filepath,
-        query as unknown as Record<string, unknown>,
-      )
+      const cacheKey = await getCacheKey(filepath, query)
       const cached = getFromCache(cacheKey)
       if (cached) {
+        const code = 'export default ' + JSON.stringify(cached)
         return {
-          code: 'export default ' + JSON.stringify(cached),
+          code: server ? code + HMR_ACCEPT : code,
           moduleType: 'js',
         }
       }
@@ -97,8 +108,9 @@ export default function cookedPlugin(options?: CookedOptions): Plugin {
 
       setCache(cacheKey, result)
 
+      const code = 'export default ' + JSON.stringify(result)
       return {
-        code: 'export default ' + JSON.stringify(result),
+        code: server ? code + HMR_ACCEPT : code,
         moduleType: 'js',
       }
     },
