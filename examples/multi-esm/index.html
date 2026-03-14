@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vite-plugin-cooked — multi ESM</title>
+  </head>
+  <body>
+    <h1>vite-plugin-cooked: Multi ESM Modules</h1>
+    <p>
+      Three separate TypeScript modules, each cooked to ESM with
+      <code>&amp;external=lodash-es</code>.
+      The iframe provides <code>lodash-es</code> via importmap — all modules
+      share one instance, no duplication.
+    </p>
+    <h2>Module Sizes</h2>
+    <div id="info"></div>
+    <h2>Live Output (iframe)</h2>
+    <div id="sandbox"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

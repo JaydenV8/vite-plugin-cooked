@@ -1,0 +1,143 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      prerelease:
+        description: "Publish as RC (e.g. 0.1.1-rc.0). Increments rc number if one already exists."
+        required: false
+        type: boolean
+        default: false
+      dry-run:
+        description: "Dry run (bump + tag + build, but skip npm publish)"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  bump:
+    name: Bump & Tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.new_version.outputs.version }}
+      tag: ${{ steps.new_version.outputs.tag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump version
+        run: |
+          npm version "${{ inputs.bump }}" --no-git-tag-version
+
+      - name: Determine version
+        id: new_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+
+          if [[ "${{ inputs.prerelease }}" == "true" ]]; then
+            RC_NUM=0
+            for existing in $(git tag -l "v${VERSION}-rc.*" 2>/dev/null); do
+              NUM="${existing##*-rc.}"
+              if [[ "$NUM" =~ ^[0-9]+$ ]] && (( NUM >= RC_NUM )); then
+                RC_NUM=$((NUM + 1))
+              fi
+            done
+            VERSION="${VERSION}-rc.${RC_NUM}"
+            npm version "$VERSION" --no-git-tag-version
+          fi
+
+          TAG="v${VERSION}"
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag '$TAG' already exists"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION, Tag: $TAG"
+
+      - name: Commit and tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: release ${{ steps.new_version.outputs.version }}"
+          git tag -a "${{ steps.new_version.outputs.tag }}" -m "Release ${{ steps.new_version.outputs.tag }}"
+          git push origin HEAD --tags
+
+  publish:
+    name: Publish to npm
+    needs: bump
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.bump.outputs.tag }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      - name: Publish (dry run)
+        if: ${{ inputs.dry-run }}
+        run: npm publish --dry-run
+
+      - name: Publish
+        if: ${{ !inputs.dry-run && !inputs.prerelease }}
+        run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish (rc)
+        if: ${{ !inputs.dry-run && inputs.prerelease }}
+        run: npm publish --provenance --tag rc
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dry-run }}
+        run: |
+          PRERELEASE_FLAG=""
+          if [[ "${{ inputs.prerelease }}" == "true" ]]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
+          gh release create "${{ needs.bump.outputs.tag }}" \
+            --title "${{ needs.bump.outputs.tag }}" \
+            --generate-notes \
+            $PRERELEASE_FLAG
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

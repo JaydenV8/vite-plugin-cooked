@@ -1,0 +1,61 @@
+{
+  "name": "vite-plugin-cooked",
+  "version": "0.1.0",
+  "description": "Vite's ?raw gives you uncooked source. This gives you the cooked version — compiled, bundled, and tree-shaken.",
+  "author": "ins",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JaydenV8/vite-plugin-cooked.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JaydenV8/vite-plugin-cooked/issues"
+  },
+  "homepage": "https://github.com/JaydenV8/vite-plugin-cooked#readme",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./client": "./client.d.ts"
+  },
+  "files": [
+    "dist",
+    "client.d.ts"
+  ],
+  "scripts": {
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "vite": ">=4.0.0"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^25.5.0",
+    "lodash-es": "^4.17.23",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.0",
+    "vitest": "^3.0.0"
+  },
+  "license": "MIT",
+  "packageManager": "pnpm@10.20.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "vite",
+    "vite-plugin",
+    "transform",
+    "compile",
+    "raw",
+    "string",
+    "worker",
+    "inline"
+  ]
+}

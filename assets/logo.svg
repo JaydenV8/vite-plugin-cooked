@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140" width="140" height="140">
+  <!-- pan -->
+  <circle cx="70" cy="78" r="48" fill="none" stroke="#f27d0d" stroke-width="5"/>
+  <line x1="108" y1="42" x2="132" y2="18" stroke="#f27d0d" stroke-width="5" stroke-linecap="round"/>
+  <!-- egg white -->
+  <ellipse cx="70" cy="80" rx="30" ry="24" fill="#f27d0d" opacity="0.18"/>
+  <!-- egg yolk -->
+  <circle cx="70" cy="76" r="12" fill="#f27d0d"/>
+  <!-- steam -->
+  <path d="M52 30 Q50 22 54 16" fill="none" stroke="#f27d0d" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+  <path d="M70 26 Q68 18 72 12" fill="none" stroke="#f27d0d" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+  <path d="M88 30 Q86 22 90 16" fill="none" stroke="#f27d0d" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+</svg>

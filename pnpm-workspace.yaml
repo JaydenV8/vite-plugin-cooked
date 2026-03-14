@@ -1,0 +1,3 @@
+approveBuildsAutomatically: true
+packages:
+  - examples/*
