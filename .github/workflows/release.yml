@@ -114,17 +114,17 @@ jobs:
 
       - name: Publish (dry run)
         if: ${{ inputs.dry-run }}
-        run: npm publish --dry-run
+        run: npm publish --dry-run --access public
 
       - name: Publish
         if: ${{ !inputs.dry-run && !inputs.prerelease }}
-        run: npm publish --provenance
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish (rc)
         if: ${{ !inputs.dry-run && inputs.prerelease }}
-        run: npm publish --provenance --tag rc
+        run: npm publish --provenance --access public --tag rc
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
