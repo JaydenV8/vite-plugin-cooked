@@ -81,14 +81,18 @@ function enqueue(fn: () => Promise<string>): Promise<string> {
   })
 }
 
-function buildGlobalsMap(
+export function buildGlobalsMap(
   external: string[],
 ): Record<string, string> {
   const globals: Record<string, string> = {}
   for (const pkg of external) {
-    // Strip scope prefix (@scope/pkg → pkg), then camelCase
-    const bare = pkg.startsWith('@') ? pkg.split('/')[1] ?? pkg : pkg
-    globals[pkg] = bare.replace(/[-.](\w)/g, (_, c: string) => c.toUpperCase())
+    // @scope/pkg → scopePkg, lodash-es → lodashEs
+    const name = pkg
+      .replace(/^@/, '')
+      .replace(/[/\-.]/g, ' ')
+      .trim()
+      .replace(/ (\w)/g, (_, c: string) => c.toUpperCase())
+    globals[pkg] = name
   }
   return globals
 }

@@ -75,10 +75,7 @@ export default function cookedPlugin(options?: CookedOptions): Plugin {
 
       this.addWatchFile(filepath)
 
-      const cacheKey = getCacheKey(
-        filepath,
-        query as unknown as Record<string, unknown>,
-      )
+      const cacheKey = await getCacheKey(filepath, query)
       const cached = getFromCache(cacheKey)
       if (cached) {
         const code = 'export default ' + JSON.stringify(cached)

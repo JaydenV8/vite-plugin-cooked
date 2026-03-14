@@ -2,7 +2,7 @@ import path from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { parseCookedQuery } from '../src/parse-query.js'
 import { compileCode } from '../src/transform.js'
-import { bundleCode } from '../src/bundle.js'
+import { bundleCode, buildGlobalsMap } from '../src/bundle.js'
 import { getCacheKey, getFromCache, invalidateCache, setCache } from '../src/cache.js'
 import cookedPlugin from '../src/index.js'
 import type { CookedQuery } from '../src/types.js'
@@ -367,8 +367,15 @@ describe('external', () => {
       minify: false,
       external: ['lodash-es'],
     })
-    // IIFE should reference the global variable
+    // IIFE should reference the global variable (lodash-es → lodashEs)
     expect(code).toContain('lodashEs')
+  })
+
+  it('buildGlobalsMap preserves scope in global name', () => {
+    const globals = buildGlobalsMap(['@emotion/react', '@scope/my-pkg', 'lodash-es'])
+    expect(globals['@emotion/react']).toBe('emotionReact')
+    expect(globals['@scope/my-pkg']).toBe('scopeMyPkg')
+    expect(globals['lodash-es']).toBe('lodashEs')
   })
 
   it('external=* + format=iife throws', async () => {
@@ -434,9 +441,15 @@ describe('external', () => {
 describe('cache', () => {
   it('returns cached result on second call', async () => {
     const filepath = fixture('basic.ts')
-    const query = { to: 'js', minify: false, format: 'es', nobundle: false }
+    const query = {
+      to: 'js' as const,
+      minify: false,
+      format: 'es' as const,
+      nobundle: false,
+      external: null,
+    }
 
-    const key = getCacheKey(filepath, query)
+    const key = await getCacheKey(filepath, query)
     expect(getFromCache(key)).toBeUndefined()
 
     setCache(key, 'cached-code')
@@ -446,21 +459,35 @@ describe('cache', () => {
     expect(getFromCache(key)).toBeUndefined()
   })
 
-  it('generates different keys for different queries', () => {
+  it('generates different keys for different queries', async () => {
     const filepath = fixture('basic.ts')
-    const key1 = getCacheKey(filepath, { to: 'js', minify: false })
-    const key2 = getCacheKey(filepath, { to: 'js', minify: true })
+    const key1 = await getCacheKey(filepath, {
+      to: 'js',
+      minify: false,
+      nobundle: false,
+      external: null,
+    })
+    const key2 = await getCacheKey(filepath, {
+      to: 'js',
+      minify: true,
+      nobundle: false,
+      external: null,
+    })
     expect(key1).not.toBe(key2)
   })
 
-  it('generates different keys for different external values', () => {
+  it('generates different keys for different external values', async () => {
     const filepath = fixture('basic.ts')
-    const key1 = getCacheKey(filepath, {
+    const key1 = await getCacheKey(filepath, {
       to: 'js',
+      minify: false,
+      nobundle: false,
       external: null,
     })
-    const key2 = getCacheKey(filepath, {
+    const key2 = await getCacheKey(filepath, {
       to: 'js',
+      minify: false,
+      nobundle: false,
       external: ['lodash-es'],
     })
     expect(key1).not.toBe(key2)
