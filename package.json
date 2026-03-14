@@ -46,16 +46,24 @@
   "license": "MIT",
   "packageManager": "pnpm@10.20.0",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "keywords": [
     "vite",
     "vite-plugin",
-    "transform",
+    "bundle",
     "compile",
     "raw",
     "string",
-    "worker",
-    "inline"
+    "web-worker",
+    "inline-worker",
+    "iframe",
+    "sandbox",
+    "code-string",
+    "tree-shaking",
+    "typescript",
+    "esbuild",
+    "rollup",
+    "script-injection"
   ]
 }

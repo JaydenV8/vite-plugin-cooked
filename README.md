@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/logo.svg" width="140" />
+  <img src="https://raw.githubusercontent.com/JaydenV8/vite-plugin-cooked/main/assets/logo.svg" width="140" />
 </p>
 
 <h1 align="center">vite-plugin-cooked</h1>
