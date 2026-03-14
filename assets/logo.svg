@@ -1,13 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140" width="140" height="140">
-  <!-- pan -->
-  <circle cx="70" cy="78" r="48" fill="none" stroke="#f27d0d" stroke-width="5"/>
-  <line x1="108" y1="42" x2="132" y2="18" stroke="#f27d0d" stroke-width="5" stroke-linecap="round"/>
-  <!-- egg white -->
-  <ellipse cx="70" cy="80" rx="30" ry="24" fill="#f27d0d" opacity="0.18"/>
-  <!-- egg yolk -->
-  <circle cx="70" cy="76" r="12" fill="#f27d0d"/>
-  <!-- steam -->
-  <path d="M52 30 Q50 22 54 16" fill="none" stroke="#f27d0d" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
-  <path d="M70 26 Q68 18 72 12" fill="none" stroke="#f27d0d" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
-  <path d="M88 30 Q86 22 90 16" fill="none" stroke="#f27d0d" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+  <!-- egg shape - clean, geometric -->
+  <path d="M70 16 C102 16 124 52 124 84 C124 114 100 132 70 132 C40 132 16 114 16 84 C16 52 38 16 70 16Z" fill="#f27d0d"/>
+  <!-- yolk highlight -->
+  <circle cx="70" cy="86" r="28" fill="white" opacity="0.2"/>
+  <!-- curly braces - representing "compiled code" -->
+  <path d="M52 72 C46 72 44 76 44 80 C44 84 40 86 38 86 C40 86 44 88 44 92 C44 96 46 100 52 100" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M88 72 C94 72 96 76 96 80 C96 84 100 86 102 86 C100 86 96 88 96 92 C96 96 94 100 88 100" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- dot in center -->
+  <circle cx="70" cy="86" r="3" fill="white"/>
 </svg>
