@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-cooked",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Vite's ?raw gives you uncooked source. This gives you the cooked version — compiled, bundled, and tree-shaken.",
   "author": "ins",
   "repository": {
