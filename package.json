@@ -65,5 +65,8 @@
     "esbuild",
     "rollup",
     "script-injection"
+  ],
+  "compatiblePackages": [
+    { "name": "vite", "versionRange": ">=4.0.0" }
   ]
 }
