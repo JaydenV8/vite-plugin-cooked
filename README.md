@@ -85,7 +85,6 @@ cooked({
 ```json
 {
   "compilerOptions": {
-    "allowArbitraryExtensions": true,
     "types": ["vite-plugin-cooked/client"]
   }
 }
